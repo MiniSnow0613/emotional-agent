@@ -1,0 +1,71 @@
+{
+    "model":  "Qwen3-4B-Instruct-2507-GGUF",
+    "servers":  [
+                    {
+                        "type":  "stdio",
+                        "config":  {
+                                       "command":  "node",
+                                       "args":  [
+                                                    "C:\\Users\\weare\\emotion-music-agent\\servers\\youtube-mcp-server\\dist\\index.js"
+                                                ],
+                                       "env":  {
+                                                   "YOUTUBE_API_KEY":  "AIzaSyC6LT15ByRTjjEUg3V14UP2Y7T_b1oBemE"
+                                               }
+                                   }
+                    },
+                    {
+                        "type":  "stdio",
+                        "config":  {
+                                       "command":  "node",
+                                       "args":  [
+                                                    "C:\\Users\\weare\\emotion-music-agent\\servers\\youtube-music-mcp-server\\build\\index.js"
+                                                ],
+                                       "env":  {
+                                                   "YOUTUBE_API_KEY":  "AIzaSyC6LT15ByRTjjEUg3V14UP2Y7T_b1oBemE"
+                                               }
+                                   }
+                    },
+                    {
+                        "type":  "stdio",
+                        "config":  {
+                                       "command":  "node",
+                                       "args":  [
+                                                    "C:\\Users\\weare\\emotion-music-agent\\servers\\mcp-database-server\\dist\\src\\index.js",
+                                                    "--mysql",
+                                                    "--host",
+                                                    "localhost",
+                                                    "--database",
+                                                    "mcp-test",
+                                                    "--port",
+                                                    "3306",
+                                                    "--user",
+                                                    "mcp",
+                                                    "--password",
+                                                    "123456"
+                                                ]
+                                   }
+                    },
+                    {
+                        "type":  "http",
+                        "config":  {
+                                       "url":  "http://127.0.0.1:8001/mcp"
+                                   }
+                    },
+                    {
+                        "type":  "http",
+                        "config":  {
+                                       "url":  "http://127.0.0.1:8002/mcp"
+                                   }
+                    },
+                    {
+                        "type":  "stdio",
+                        "config":  {
+                                       "command":  "C:\\Users\\weare\\miniforge3\\envs\\agent_test\\python.exe",
+                                       "args":  [
+                                                    "C:\\Users\\weare\\emotion-music-agent\\servers\\puzzle_mcp_server.py"
+                                                ],
+                                       "workingDirectory":  "C:\\Users\\weare\\emotion-music-agent\\servers"
+                                   }
+                    }
+                ]
+}

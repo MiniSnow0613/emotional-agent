@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>本地圖片拼圖 · 拖曳版</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>">
+  <style>
+    /* ========== 主題變數：改成與 gui_client 一致 ========== */
+    :root{
+      /* Dark（gui_client 配色） */
+      --bg1:#0f1216;
+      --bg2:#171b22;
+      --card:#171b22;              /* 實心卡片，配合 blur 也自然 */
+      --card-strong:#1b212c;       /* 稍深一級 */
+      --text:#e6e8ec;
+      --muted:#aab0c6;
+      --border:#262c36;
+      --accent:#00c2a8;            /* 主色（綠松石） */
+      --accent2:#0c5f51;           /* 主色深階，用於漸層 or hover */
+      --ring:#2a3342;              /* 焦點/外框 */
+      --link:#8ab4ff;              /* 介面藍（呼應 gui_client log 藍） */
+      --shadow:0 10px 30px rgba(0,0,0,.45);
+      --tileShadow:0 6px 16px rgba(0,0,0,.40);
+      --overlay-bg: rgba(0,0,0,.60);
+      --dialog-bg: rgba(15,17,21,.94); /* #0f1115 近似 */
+      --dlg-border: rgba(255,255,255,.08);
+    }
+
+    /* 可選：保留 light 主題，若切換時仍有一致設計語氣 */
+    [data-theme="light"]{
+      --bg1:#f6fbfa;
+      --bg2:#eef6f4;
+      --card:#ffffff;
+      --card-strong:#ffffff;
+      --text:#101322;
+      --muted:#5b6280;
+      --border:rgba(16,19,34,.12);
+      --accent:#00c2a8;
+      --accent2:#0c5f51;
+      --ring:#9cc3c0;
+      --link:#2b6fff;
+      --shadow:0 10px 30px rgba(31,39,69,.14);
+      --tileShadow:0 6px 14px rgba(31,39,69,.12);
+      --overlay-bg: rgba(255,255,255,.65);
+      --dialog-bg: rgba(255,255,255,.94);
+      --dlg-border: rgba(16,19,34,.10);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Microsoft JhengHei", Arial;
+      background:
+        radial-gradient(1200px 800px at 10% 0%, var(--bg2), transparent 60%),
+        radial-gradient(1200px 800px at 90% 100%, var(--bg1), transparent 60%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      background-attachment: fixed;
+      animation: bgShift 24s ease-in-out infinite alternate;
+      user-select:none;
+    }
+    @keyframes bgShift{
+      0%{background-position: 0% 0%, 100% 100%, 0 0}
+      100%{background-position: 10% -5%, 90% 105%, 100% 100%}
+    }
+
+    .container{max-width:1180px; margin:28px auto; padding:0 16px}
+
+    .toolbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:14px 16px; border-radius:16px; background:var(--card);
+      backdrop-filter: blur(12px);
+      border:1px solid var(--border); box-shadow:var(--shadow);
+    }
+    h1{margin:0; font-size:20px; letter-spacing:.3px; display:flex; align-items:center; gap:10px}
+    .badge{
+      font-size:11px; color:#0b0f14;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      padding:4px 8px; border-radius:999px;
+      box-shadow:0 0 0 1px rgba(255,255,255,.10), 0 8px 30px rgba(0,194,168,.20);
+    }
+
+    .toolbar-actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+    .btn{
+      border:1px solid var(--border);
+      background:var(--card-strong);
+      color:var(--text);
+      padding:10px 14px; border-radius:12px; cursor:pointer; transition:.18s;
+      box-shadow:var(--shadow); backdrop-filter: blur(6px);
+    }
+    .btn:hover{transform: translateY(-1px)}
+    .btn.primary{
+      color:#0b0f14; border-color:transparent;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+    }
+
+    .grid{display:grid; gap:16px; grid-template-columns: 1fr}
+    @media (min-width: 980px){ .grid{grid-template-columns: 2fr 1fr} }
+
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:18px; padding:16px; backdrop-filter: blur(10px); box-shadow:var(--shadow) }
+    .label{font-size:13px; color:var(--muted); margin-bottom:8px}
+
+    .seg{display:inline-flex; border:1px solid var(--border); background:var(--card-strong); border-radius:999px; padding:4px; gap:4px}
+    .seg button{
+      border:none; background:transparent; color:var(--text);
+      padding:8px 12px; border-radius:999px; cursor:pointer; transition:.15s
+    }
+    .seg button.active{
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      color:#0b0f14;
+    }
+
+    .preview{
+      aspect-ratio:16/9; width:100%; border:1px dashed var(--border); border-radius:16px;
+      background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.05) 0 10deg, transparent 10deg 20deg);
+      display:grid; place-items:center; overflow:hidden; color:var(--muted); position:relative;
+    }
+    .preview.dragover{outline:3px dashed var(--ring); box-shadow:0 0 0 6px rgba(42,51,66,.18) inset}
+    .preview img{width:100%; height:100%; object-fit:contain; display:block}
+
+    .board-wrap{position:relative}
+    .board{
+      position:relative; width:100%; aspect-ratio:1/1; border-radius:18px; overflow:hidden;
+      border:1px solid var(--border); background:rgba(255,255,255,.03);
+      box-shadow:var(--shadow);
+      touch-action:none;
+    }
+    .gridlines{position:absolute; inset:0; display:grid}
+    .gridlines>div{border:1px dashed rgba(255,255,255,.12)}
+
+    .tile{
+      position:absolute; z-index:1; border-radius:12px; box-shadow:var(--tileShadow);
+      background-repeat:no-repeat; will-change: transform, left, top;
+      touch-action:none; cursor:grab; transition: box-shadow .15s, filter .15s;
+    }
+    .tile.dragging{ z-index:5; cursor:grabbing; box-shadow:0 10px 30px rgba(0,0,0,.45); filter: saturate(1.06) brightness(1.03); }
+
+    .overlay{
+      position:absolute; inset:0; display:none; align-items:center; justify-content:center; z-index:20;
+      background: var(--overlay-bg); backdrop-filter: blur(6px);
+      animation: fadeIn .2s ease forwards;
+    }
+    .overlay.active{display:flex}
+    @keyframes fadeIn{from{opacity:0} to{opacity:1}}
+
+    .fx-canvas{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:20}
+
+    .dialog{
+      position:relative; z-index:21; background:var(--dialog-bg);
+      border:1px solid var(--dlg-border); border-radius:18px; padding:22px; width:min(520px, 92vw); text-align:center; box-shadow:var(--shadow)
+    }
+    .dialog h2{
+      margin:0 0 10px; font-size:28px;
+      background: linear-gradient(120deg,var(--accent),var(--accent2)); -webkit-background-clip:text; color:transparent;
+      letter-spacing:.4px;
+    }
+    .muted{color:var(--muted); font-size:14px}
+
+    .album-grid{display:grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap:14px}
+    .album-item{border:1px solid var(--border); border-radius:14px; background:var(--card); overflow:hidden; box-shadow:var(--shadow)}
+    .album-item img{width:100%; aspect-ratio:1/1; object-fit:cover; display:block; transition:.2s}
+    .album-item:hover img{transform:scale(1.02)}
+    .album-meta{padding:10px; font-size:12px; color:var(--muted); display:flex; align-items:center; justify-content:space-between; gap:6px}
+    .album-actions{display:flex; gap:8px}
+    .linklike{color:var(--link); cursor:pointer; border:none; background:none; padding:0}
+    .linklike:hover{text-decoration:underline}
+
+    .footer{margin-top:20px; text-align:center; color:var(--muted); font-size:12px; opacity:.9}
+
+    @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <h1>本地圖片拼圖 <span class="badge">拖曳版</span></h1>
+      <div class="toolbar-actions">
+        <button id="btnTheme" class="btn">主題</button>
+        <input id="filePick" type="file" accept="image/*" style="display:none">
+        <button id="btnUpload" class="btn primary">選擇圖片</button>
+        <button id="btnReshuffle" class="btn" disabled>重洗拼圖</button>
+        <button id="btnExit" class="btn">結束</button>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:16px">
+      <section class="card">
+        <div class="label">難度</div>
+        <div class="seg">
+          <button class="active" data-grid="3">3 × 3</button>
+          <button data-grid="4">4 × 4</button>
+          <button data-grid="5">5 × 5</button>
+        </div>
+        <div id="err" style="margin-top:10px; display:none; color:#ff6b6b; font-size:13px"></div>
+      </section>
+
+      <aside class="card">
+        <div class="label">完成示意圖（可拖放圖片到此處）</div>
+        <div class="preview" id="preview"><span>尚未選擇圖片</span></div>
+      </aside>
+    </div>
+
+    <section class="card" style="margin-top:16px">
+      <div class="board-wrap">
+        <div id="board" class="board">
+          <div class="gridlines" id="gridlines"></div>
+          <div class="overlay" id="overlay">
+            <canvas id="fx" class="fx-canvas"></canvas>
+            <div class="dialog">
+              <h2>🎉 Congratulations!</h2>
+              <p class="muted">完成了這幅拼圖！要收藏或再來一局？</p>
+              <div class="toolbar-actions" style="justify-content:center; margin-top:12px">
+                <button id="btnAddToAlbum" class="btn primary">加入收集冊</button>
+                <button id="btnDownload" class="btn">下載原圖</button>
+                <button id="btnRetry" class="btn">再玩一次</button>
+                <button id="btnClose" class="btn">關閉</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="label" style="margin-top:10px">提示：按住拼圖塊拖曳到目標格；放開會自動吸附並交換。</div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <div style="display:flex; align-items:center; justify-content:space-between">
+        <div class="label" style="margin:0">收集冊</div>
+        <div class="toolbar-actions"><button id="btnClearAlbum" class="btn">清空收集冊</button></div>
+      </div>
+      <div id="albumGrid" class="album-grid"></div>
+    </section>
+
+    <div class="footer">© Local Puzzle – drag & drop</div>
+  </div>
+
+  <script>
+    // ========= 狀態 =========
+    let grid=3, tiles=[], solved=false;
+    let imgUrl=null, imgW=null, imgH=null, lastDataURL=null;
+
+    // 拖曳暫存
+    let dragging = null;
+
+    // ========= DOM =========
+    const $ = s=>document.querySelector(s);
+    const elPreview=$('#preview'), elGridlines=$('#gridlines'), elBoard=$('#board'), elOverlay=$('#overlay');
+    const elErr=$('#err'), filePick=$('#filePick'), btnUpload=$('#btnUpload'), btnReshuffle=$('#btnReshuffle'), btnExit=$('#btnExit');
+    const btnAddToAlbum=$('#btnAddToAlbum'), btnDownload=$('#btnDownload'), btnRetry=$('#btnRetry'), btnClose=$('#btnClose');
+    const albumGrid=$('#albumGrid'), btnClearAlbum=$('#btnClearAlbum'), btnTheme=$('#btnTheme');
+    const fxCanvas=$('#fx');
+
+    // ========= 工具 =========
+    const shuffle=a=>{const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [b[i],b[j]]=[b[j],b[i]]} return b};
+    const idxToXY=(i,g)=>({x:i%g, y:Math.floor(i/g)});
+    const setError=msg=>{ if(!msg){elErr.style.display='none'; elErr.textContent=''} else {elErr.style.display='block'; elErr.textContent=msg}};
+    const loadImage=url=>new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url });
+
+    // 主題（保留切換）
+    (function initTheme(){
+      const saved=localStorage.getItem('puzzle-theme');
+      if(saved) document.documentElement.setAttribute('data-theme', saved);
+      btnTheme.addEventListener('click', ()=>{
+        const cur=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+        document.documentElement.setAttribute('data-theme', cur);
+        localStorage.setItem('puzzle-theme', cur);
+      });
+    })();
+
+    function applyAspectRatio(w,h){ if(!w||!h) return; elPreview.style.aspectRatio=`${w} / ${h}`; elBoard.style.aspectRatio=`${w} / ${h}`; }
+    async function setPreview(url){
+      elPreview.innerHTML=''; if(!url){ elPreview.innerHTML='<span>尚未選擇圖片</span>'; return; }
+      try{ const img=await loadImage(url); imgW=img.naturalWidth; imgH=img.naturalHeight; applyAspectRatio(imgW,imgH);
+        img.style.width='100%'; img.style.height='100%'; img.style.objectFit='contain'; elPreview.appendChild(img);
+      }catch{ elPreview.innerHTML='<span>預覽載入失敗</span>'; }
+    }
+
+    function buildGridlines(){
+      elGridlines.style.gridTemplateColumns=`repeat(${grid},1fr)`;
+      elGridlines.style.gridTemplateRows=`repeat(${grid},1fr)`;
+      elGridlines.innerHTML=''; for(let i=0;i<grid*grid;i++){const d=document.createElement('div'); elGridlines.appendChild(d)}
+    }
+
+    function initTiles(){
+      const total=grid*grid, init=Array.from({length:total},(_,i)=>i);
+      let order=shuffle(init); if(order.every((p,i)=>p===i)) order=shuffle(order);
+      tiles=order.map((p,pos)=>({index:p,pos})); solved=false;
+      renderTiles(); btnReshuffle.disabled=!imgUrl;
+    }
+
+    function renderTiles(){
+      elBoard.querySelectorAll('.tile').forEach(n=>n.remove()); if(!imgUrl) return;
+      const size=100/grid;
+      tiles.forEach(t=>{
+        const {x,y}=idxToXY(t.index,grid), pos=t.pos, col=pos%grid, row=Math.floor(pos/grid);
+        const div=document.createElement('div');
+        div.className='tile';
+        div.style.left=`${size*col}%`; div.style.top=`${size*row}%`;
+        div.style.width=`${size}%`; div.style.height=`${size}%`;
+        div.style.backgroundImage=`url(${imgUrl})`;
+        div.style.backgroundSize=`${grid*100}% ${grid*100}%`;
+        const bx=(grid===1)?0:(x*100)/(grid-1), by=(grid===1)?0:(y*100)/(grid-1);
+        div.style.backgroundPosition=`${bx}% ${by}%`;
+        div.dataset.pos=String(pos);
+        div.addEventListener('pointerdown', onTilePointerDown);
+        elBoard.appendChild(div);
+      });
+    }
+
+    function redrawPositions(){
+      const size=100/grid;
+      elBoard.querySelectorAll('.tile').forEach(div=>{
+        const p=Number(div.dataset.pos), col=p%grid, row=Math.floor(p/grid);
+        div.style.left=`${size*col}%`; div.style.top=`${size*row}%`;
+        div.style.transform='';
+      });
+    }
+
+    function swapPos(posA,posB){
+      if (posA===posB) return;
+      const ia=tiles.findIndex(t=>t.pos===posA), ib=tiles.findIndex(t=>t.pos===posB);
+      if(ia<0||ib<0) return;
+      const tmp=tiles[ia].pos; tiles[ia].pos=tiles[ib].pos; tiles[ib].pos=tmp;
+      elBoard.querySelectorAll('.tile').forEach(div=>{
+        const p=Number(div.dataset.pos);
+        if(p===posA) div.dataset.pos=String(posB);
+        else if(p===posB) div.dataset.pos=String(posA);
+      });
+      redrawPositions(); checkSolved();
+    }
+
+    function checkSolved(){
+      const ok=tiles.every(t=>t.index===t.pos);
+      if(ok){ solved=true; elOverlay.classList.add('active'); startFireworks(); }
+    }
+
+    // ---- 拖曳邏輯 ----
+    function onTilePointerDown(e){
+      if (solved) return;
+      const el = e.currentTarget;
+      const fromPos = Number(el.dataset.pos);
+      const rectBoard = elBoard.getBoundingClientRect();
+      const cellW = rectBoard.width / grid;
+      const cellH = rectBoard.height / grid;
+      const col = fromPos % grid;
+      const row = Math.floor(fromPos / grid);
+      const originLeftPx = rectBoard.left + col * cellW;
+      const originTopPx  = rectBoard.top  + row * cellH;
+
+      dragging = {
+        el, fromPos,
+        startX: e.clientX, startY: e.clientY,
+        originLeftPx, originTopPx,
+        cellW, cellH
+      };
+
+      el.classList.add('dragging');
+      el.setPointerCapture?.(e.pointerId);
+      window.addEventListener('pointermove', onTilePointerMove, {passive:false});
+      window.addEventListener('pointerup', onTilePointerUp, {passive:false});
+      e.preventDefault();
+    }
+
+    function onTilePointerMove(e){
+      if (!dragging) return;
+      const dx = e.clientX - dragging.startX;
+      const dy = e.clientY - dragging.startY;
+      dragging.el.style.transform = `translate(${dx}px, ${dy}px)`;
+      e.preventDefault();
+    }
+
+    function onTilePointerUp(e){
+      if (!dragging) return;
+      const el = dragging.el;
+      const rectBoard = elBoard.getBoundingClientRect();
+      const dx = e.clientX - dragging.startX;
+      const dy = e.clientY - dragging.startY;
+      const centerX = dragging.originLeftPx + dragging.cellW/2 + dx;
+      const centerY = dragging.originTopPx + dragging.cellH/2 + dy;
+
+      let col = Math.floor((centerX - rectBoard.left) / dragging.cellW);
+      let row = Math.floor((centerY - rectBoard.top)  / dragging.cellH);
+      col = Math.min(Math.max(0, col), grid-1);
+      row = Math.min(Math.max(0, row), grid-1);
+      const toPos = row * grid + col;
+
+      el.classList.remove('dragging');
+      el.releasePointerCapture?.(e.pointerId);
+
+      swapPos(dragging.fromPos, toPos);
+
+      window.removeEventListener('pointermove', onTilePointerMove);
+      window.removeEventListener('pointerup', onTilePointerUp);
+      dragging = null;
+      e.preventDefault();
+    }
+
+    // 上傳/拖放 → DataURL
+    const readAsDataURL=f=>new Promise((res,rej)=>{const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f)});
+    async function resizeDataURL(dataURL,maxSide=1600,quality=.92){
+      const im=await loadImage(dataURL); let w=im.naturalWidth, h=im.naturalHeight, r=w/h;
+      if(Math.max(w,h)>maxSide){ if(w>=h){ w=maxSide; h=Math.round(maxSide/r);} else {h=maxSide; w=Math.round(maxSide*r);} }
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(im,0,0,w,h);
+      return c.toDataURL('image/jpeg', quality);
+    }
+    async function useDataURL(d){
+      lastDataURL=d; imgUrl=d; await setPreview(imgUrl); buildGridlines(); initTiles(); setError('');
+      window.scrollTo({top: elBoard.getBoundingClientRect().top + window.scrollY - 20, behavior:'smooth'});
+    }
+
+    // 綁定：上傳 / 拖放
+    btnUpload.addEventListener('click', ()=>filePick.click());
+    filePick.addEventListener('change', async e=>{
+      const f=e.target.files?.[0]; if(!f) return; if(!f.type.startsWith('image/')) return setError('請選擇圖片檔');
+      const raw=await readAsDataURL(f); const small=await resizeDataURL(raw); await useDataURL(small);
+    });
+    ['dragenter','dragover'].forEach(evt=> elPreview.addEventListener(evt, e=>{e.preventDefault(); elPreview.classList.add('dragover'); e.dataTransfer.dropEffect='copy'}));
+    ['dragleave','dragend','drop'].forEach(evt=> elPreview.addEventListener(evt, ()=> elPreview.classList.remove('dragover')));
+    elPreview.addEventListener('drop', async e=>{
+      e.preventDefault(); const f=e.dataTransfer.files?.[0]; if(!f||!f.type.startsWith('image/')) return;
+      const raw=await readAsDataURL(f); const small=await resizeDataURL(raw); await useDataURL(small);
+    });
+
+    // 收集冊
+    const LS_KEY='puzzleAlbum.v1';
+    const loadAlbum=()=>{try{return JSON.parse(localStorage.getItem(LS_KEY)||'[]')}catch{return[]}};
+    const saveAlbum=list=>localStorage.setItem(LS_KEY, JSON.stringify(list));
+    const addToAlbum=entry=>{const l=loadAlbum(); l.unshift(entry); saveAlbum(l); renderAlbum()};
+    const removeFromAlbum=i=>{const l=loadAlbum(); l.splice(i,1); saveAlbum(l); renderAlbum()};
+    const clearAlbum=()=>{localStorage.removeItem(LS_KEY); renderAlbum()};
+    const fmt=ts=>{const d=new Date(ts),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`};
+    function renderAlbum(){
+      const list=loadAlbum(); albumGrid.innerHTML='';
+      if(!list.length){ albumGrid.innerHTML='<div class="label" style="grid-column:1/-1;text-align:center;padding:22px">尚無收藏，完成拼圖後可加入收集冊</div>'; return; }
+      list.forEach((it,idx)=>{
+        const card=document.createElement('div'); card.className='album-item';
+        const img=document.createElement('img'); img.src=it.dataURL; img.alt='收藏縮圖';
+        img.addEventListener('click', async ()=>{ await useDataURL(it.dataURL); window.scrollTo({top:0,behavior:'smooth'}) });
+        const meta=document.createElement('div'); meta.className='album-meta'; meta.innerHTML=`<span>${fmt(it.time)}・${it.grid}×${it.grid}</span>`;
+        const acts=document.createElement('div'); acts.className='album-actions';
+        const a=document.createElement('a'); a.textContent='下載'; a.className='linklike'; a.href=it.dataURL; a.download=`puzzle-${it.grid}x${it.grid}.jpg`;
+        const del=document.createElement('button'); del.textContent='刪除'; del.className='linklike'; del.addEventListener('click',e=>{e.stopPropagation(); removeFromAlbum(idx)});
+        acts.appendChild(a); acts.appendChild(del); meta.appendChild(acts);
+        card.appendChild(img); card.appendChild(meta); albumGrid.appendChild(card);
+      });
+    }
+
+    btnAddToAlbum.addEventListener('click', ()=>{ if(!lastDataURL) return; addToAlbum({dataURL:lastDataURL, grid, time:Date.now(), w:imgW, h:imgH}); elOverlay.classList.remove('active'); stopFireworks(); });
+    btnDownload.addEventListener('click', ()=>{ if(!imgUrl) return; const a=document.createElement('a'); a.href=imgUrl; a.download='puzzle-image.jpg'; document.body.appendChild(a); a.click(); a.remove() });
+    btnRetry.addEventListener('click', ()=>{ elOverlay.classList.remove('active'); stopFireworks(); initTiles() });
+    btnClose.addEventListener('click', ()=>{ elOverlay.classList.remove('active'); stopFireworks() });
+    btnClearAlbum.addEventListener('click', ()=>{ if(confirm('確定清空收集冊？')) clearAlbum() });
+
+    document.querySelectorAll('.seg button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        document.querySelectorAll('.seg button').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active'); grid=Number(b.dataset.grid); buildGridlines(); if(imgUrl) initTiles();
+      });
+    });
+    btnReshuffle.addEventListener('click', ()=>{ if(!imgUrl) return; initTiles(); elOverlay.classList.remove('active'); stopFireworks() });
+    btnExit.addEventListener('click', ()=>{ window.close(); document.body.innerHTML='<div style="display:grid;place-items:center;min-height:100vh;font:16px/1.4 system-ui">已結束程式。關閉此分頁即可。</div>' });
+
+    // 煙火特效
+    let fxCtx=null, fxRAF=null, bursts=[], lastEmit=0;
+    function sizeFx(){
+      const dpr=window.devicePixelRatio||1, r=elOverlay.getBoundingClientRect();
+      fxCanvas.width=Math.max(1,Math.floor(r.width*dpr)); fxCanvas.height=Math.max(1,Math.floor(r.height*dpr));
+      fxCanvas.style.width='100%'; fxCanvas.style.height='100%';
+      fxCtx=fxCanvas.getContext('2d'); fxCtx.setTransform(dpr,0,0,dpr,0,0); fxCtx.globalCompositeOperation='lighter';
+    }
+    function spawnBurst(){
+      const w=fxCanvas.clientWidth, h=fxCanvas.clientHeight;
+      const cx=(0.15+Math.random()*0.7)*w, cy=(0.15+Math.random()*0.5)*h;
+      const n=60+Math.floor(Math.random()*40);
+      const colors=[[255,99,71],[255,215,0],[135,206,250],[144,238,144],[221,160,221]];
+      const col=colors[Math.floor(Math.random()*colors.length)];
+      for(let i=0;i<n;i++){
+        const a=Math.random()*Math.PI*2, s=2+Math.random()*4;
+        bursts.push({x:cx,y:cy,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:60+Math.random()*30,size:2+Math.random()*2.5,r:col[0],g:col[1],b:col[2],alpha:1});
+      }
+    }
+    function stepFireworks(ts){
+      if(!elOverlay.classList.contains('active')){ fxRAF=null; return }
+      if(!fxCtx) sizeFx(); if(!lastEmit) lastEmit=ts; if(ts-lastEmit>420){ spawnBurst(); lastEmit=ts }
+      fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);
+      for(let i=bursts.length-1;i>=0;i--){
+        const p=bursts[i]; p.vx*=0.985; p.vy=p.vy*0.985+0.04; p.x+=p.vx; p.y+=p.vy; p.life-=1; p.alpha=Math.max(0,p.life/80);
+        if(p.life<=0){ bursts.splice(i,1); continue }
+        fxCtx.beginPath(); fxCtx.fillStyle=`rgba(${p.r},${p.g},${p.b},${p.alpha})`; fxCtx.arc(p.x,p.y,p.size,0,Math.PI*2); fxCtx.fill();
+      }
+      fxRAF=requestAnimationFrame(stepFireworks);
+    }
+    function startFireworks(){ bursts=[]; lastEmit=0; sizeFx(); if(fxRAF) cancelAnimationFrame(fxRAF); fxRAF=requestAnimationFrame(stepFireworks); window.addEventListener('resize', sizeFx) }
+    function stopFireworks(){ if(fxRAF){ cancelAnimationFrame(fxRAF); fxRAF=null } bursts=[]; lastEmit=0; if(fxCtx) fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height); window.removeEventListener('resize', sizeFx) }
+
+    // 初始化
+    elPreview.style.aspectRatio='16 / 9'; elBoard.style.aspectRatio='1 / 1';
+    elPreview.innerHTML='<span>尚未選擇圖片</span>'; buildGridlines(); renderAlbum();
+  </script>
+</body>
+</html>
+
