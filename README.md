@@ -22,21 +22,24 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\launcher.ps1
 
 ## Usage
 1. The Lemonade Launcher window opens. Click One-Click START to start all servers.
+
    <img width="500" alt="image" src="https://github.com/user-attachments/assets/865c2fcd-d41c-4405-a90e-8241c3459c09" />
    
-2. After a short initialization period, the Emotional AI Agent chat box becomes available.
-3. On first launch, the agent performs a mood detection step (this can take a moment).
+3. After a short initialization period, the Emotional AI Agent chat box becomes available.
+4. On first launch, the agent performs a mood detection step (this can take a moment).
     * If it detects that you’re not feeling well, it will ask whether to open the main menu.
     * Reply `/ok` to enter the menu, or `/no` to skip.
-   <img width="1804" height="1360" alt="image" src="https://github.com/user-attachments/assets/db4d889d-8c7a-423c-8650-a98a377f68c1" />
+   
+   <img width="500" alt="image" src="https://github.com/user-attachments/assets/db4d889d-8c7a-423c-8650-a98a377f68c1" />
     
-4. Ongoing checks: Every 10 minutes, the agent automatically re-checks your mood and may prompt again to open the main menu if needed.
-5. Inside the main menu, you can choose:
+5. Ongoing checks: Every 10 minutes, the agent automatically re-checks your mood and may prompt again to open the main menu if needed.
+6. Inside the main menu, you can choose:
     * `/music` — Play a YouTube Music track.
     * `/mind` — Start a guided mindfulness session.
     * `/game` — Launch a light stress-relief mini-game.
     * `/chat` — Chat with the agent.
-   <img width="1804" height="1360" alt="image" src="https://github.com/user-attachments/assets/bfbf0c23-8c9d-4edd-9086-89872db72c89" />
+   
+   <img width="500" alt="image" src="https://github.com/user-attachments/assets/bfbf0c23-8c9d-4edd-9086-89872db72c89" />
 
 ## Features by Tool
 #### `/music` — YouTube Music playback
@@ -57,7 +60,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\launcher.ps1
 * You can: choose the image, select the puzzle layout, and save images you’ve completed.
 * Examples:
     * `/game` — open the puzzle home
-<img width="1004" height="1904" alt="image" src="https://github.com/user-attachments/assets/0e6f8596-f602-41c9-958c-a1e1a32a5d96" />
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/0e6f8596-f602-41c9-958c-a1e1a32a5d96" />
 
 #### `/chat` — Private, therapist-style conversation
 * What it does: Chat with a supportive AI that behaves like a mental-health coach
@@ -65,4 +69,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\launcher.ps1
 * Shortcut hub: From here, you can also trigger music, mindfulness, or the puzzle game without leaving chat.
 * Examples:
     * `/chat` — start talking
-<img width="1804" height="1360" alt="image" src="https://github.com/user-attachments/assets/8045fb94-93b6-4c26-a5a6-11a81be67b79" />
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/8045fb94-93b6-4c26-a5a6-11a81be67b79" />
