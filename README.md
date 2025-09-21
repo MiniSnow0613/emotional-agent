@@ -74,9 +74,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\launcher.ps1
 
 ## Troubleshooting
 
-**Issue:** After installing Lemonade Server, **GGUF** or **NPU** models fail to start.
-<br>**Cause:** Outdated **AMD GPU driver** (and related runtimes).<br/>
-**Fix:** Update to the latest **AMD Software: Adrenalin Edition** driver, then **reboot** and relaunch.
+- **Issue:** After installing Lemonade Server, **GGUF** or **NPU** models fail to start.
+- **Cause:** Outdated **AMD GPU driver** (and related runtimes).
+- **Fix:** Update to the latest **AMD Software: Adrenalin Edition** driver, then **reboot** and relaunch.
 
 ## Demo Video
 Watch the demo: https://drive.google.com/file/d/1XloGdozNn6EWx1JCt_B_CVuSYb2ildWN/view?usp=drive_link
