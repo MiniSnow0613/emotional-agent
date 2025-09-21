@@ -22,12 +22,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\launcher.ps1
 
 ## Usage
 1. The Lemonade Launcher window opens. Click One-Click START to start all servers.
-<img width="2132" height="1266" alt="image" src="https://github.com/user-attachments/assets/865c2fcd-d41c-4405-a90e-8241c3459c09" />
+   <img width="2132" height="1266" alt="image" src="https://github.com/user-attachments/assets/865c2fcd-d41c-4405-a90e-8241c3459c09" />
+   
 2. After a short initialization period, the Emotional AI Agent chat box becomes available.
 3. On first launch, the agent performs a mood detection step (this can take a moment).
     * If it detects that you’re not feeling well, it will ask whether to open the main menu.
     * Reply `/ok` to enter the menu, or `/no` to skip.
-    <img width="1804" height="1360" alt="image" src="https://github.com/user-attachments/assets/db4d889d-8c7a-423c-8650-a98a377f68c1" />
+   <img width="1804" height="1360" alt="image" src="https://github.com/user-attachments/assets/db4d889d-8c7a-423c-8650-a98a377f68c1" />
+    
 4. Ongoing checks: Every 10 minutes, the agent automatically re-checks your mood and may prompt again to open the main menu if needed.
 5. Inside the main menu, you can choose:
     * `/music` — Play a YouTube Music track.
