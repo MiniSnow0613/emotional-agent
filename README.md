@@ -1,4 +1,4 @@
-
+https://drive.google.com/file/d/1XloGdozNn6EWx1JCt_B_CVuSYb2ildWN/view?usp=drive_link
 # Emotion AI Agent
 This Emotional AI Agent monitors your mood in real time and steps in when it detects you’re feeling down. It opens a friendly chatbot that lets you choose what helps most in the moment—queue a YouTube Music track, start a guided mindfulness meditation, launch a light stress-relief mini-game, or simply talk it out. The goal is simple: provide timely, supportive interactions that help you reset and feel better.
 
