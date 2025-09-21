@@ -22,7 +22,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\launcher.ps1
 
 ## Usage
 1. The Lemonade Launcher window opens. Click One-Click START to start all servers.
-   <img width="2132" height="1266" alt="image" src="https://github.com/user-attachments/assets/865c2fcd-d41c-4405-a90e-8241c3459c09" />
+   <img width="500" alt="image" src="https://github.com/user-attachments/assets/865c2fcd-d41c-4405-a90e-8241c3459c09" />
    
 2. After a short initialization period, the Emotional AI Agent chat box becomes available.
 3. On first launch, the agent performs a mood detection step (this can take a moment).
