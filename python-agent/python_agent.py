@@ -16,7 +16,7 @@
 Python：3.9+
 
 環境變數（可選）：
-    EMOTION_POLL_SEC=60           # 輪詢秒數（預設 60）
+    EMOTION_POLL_SEC=600          # 輪詢秒數（預設 600）
     BAD_EMOTIONS="angry,disgust,fear,sad, happy, neutral, surprise"
     LOG_EMOTION_DEBUG=1           # 顯示 MCP 情緒偵測除錯
     LOG_TOOL_DEBUG=1              # 顯示工具事件除錯（預設關）
@@ -41,7 +41,7 @@ AGENT_JSON_PATH = os.path.join(PROJECT_ROOT, "agent.json")
 POLL_INTERVAL_SEC = int(os.environ.get("EMOTION_POLL_SEC", "600"))  # 預設 600 秒
 BAD_EMOTIONS = {e.strip().lower() for e in os.environ.get(
     "BAD_EMOTIONS",
-    "angry, disgust, fear, sad, happy, neutral, surprise"
+    "angry, disgust, fear, sad"
 ).split(",") if e.strip()}
 LOG_EMOTION_DEBUG = os.environ.get("LOG_EMOTION_DEBUG", "0") == "1"
 LOG_TOOL_DEBUG = os.environ.get("LOG_TOOL_DEBUG", "0") == "1"
