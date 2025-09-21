@@ -28,6 +28,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\launcher.ps1
 3. On first launch, the agent performs a mood detection step (this can take a moment).
     * If it detects that you’re not feeling well, it will ask whether to open the main menu.
     * Reply `/ok` to enter the menu, or `/no` to skip.
+   
    <br><img width="500" alt="image" src="https://github.com/user-attachments/assets/db4d889d-8c7a-423c-8650-a98a377f68c1" /><br/>
     
 5. Ongoing checks: Every 10 minutes, the agent automatically re-checks your mood and may prompt again to open the main menu if needed.
@@ -36,6 +37,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\launcher.ps1
     * `/mind` — Start a guided mindfulness session.
     * `/game` — Launch a light stress-relief mini-game.
     * `/chat` — Chat with the agent.
+   
    <br><img width="500" alt="image" src="https://github.com/user-attachments/assets/bfbf0c23-8c9d-4edd-9086-89872db72c89" /><br/>
 
 ## Features by Tool
